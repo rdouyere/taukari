@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="../css/bootstrap.min.css" rel="stylesheet" media="screen">
+<style>
+body {
+	font: 10px sans-serif;
+}
+
+.axis path,.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+circle {
+	fill: #ccc;
+	fill-opacity: .5;
+}
+</style>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="text-center">
+			<form class="form-inline">
+				<legend>Scatter</legend>
+				<fieldset>
+					<label>X Axis</label> <select id="form_x" onchange="refresh()">
+<!-- 						<option>duration_z</option> -->
+<!-- 						<option>sql_z</option> -->
+<!-- 						<option>hbase_z</option> -->
+<!-- 						<option>solr_z</option> -->
+						<option>T_z</option>
+						<option>H_z</option>
+						<option>Lux_z</option>
+					</select>
+				</fieldset>
+				<fieldset>
+					<label>Y Axis</label> <select id="form_y" onchange="refresh()">
+<!-- 						<option>duration_z</option> -->
+<!-- 						<option>sql_z</option> -->
+<!-- 						<option>hbase_z</option> -->
+<!-- 						<option>solr_z</option> -->
+						<option>T_z</option>
+						<option>H_z</option>
+						<option>Lux_z</option>
+					</select>
+				</fieldset>
+			</form>
+		</div>
+		<div class="text-center">
+			<div id="_graph"></div>
+		</div>
+	</div>
+
+	<script src="main.js"></script>
+</body>
+</html>

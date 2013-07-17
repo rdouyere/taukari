@@ -4,3 +4,11 @@
 *.jar
 *.war
 *.ear
+
+# Eclipse specific #
+.classpath
+.settings/
+.project
+
+TODO.txt
+target/
