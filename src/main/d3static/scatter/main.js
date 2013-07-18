@@ -31,25 +31,73 @@ svg.append("g")
 	.attr("class", "y axis")
 	.call(yAxis);
 
+ 
+var source = extractUrlParams()['source'];
+
 // load CSV
 data = [];
-d3.csv("/tmp/mining/meteo/norm.csv", function(error, d) {
+d3.csv(source, function(error, d) {
 	data = d;
 
+	addForm();
+	
 	mapData();
 
 	x.domain(d3.extent(data, function(d) { return d.x; })).nice();
 	y.domain(d3.extent(data, function(d) { return d.y; })).nice();
 
+	
 	refresh();
 });
 
-function mapData() {
-	var x_form = document.getElementById("form_x");
-	var x_form_value = x_form.options[x_form.selectedIndex].value;
-	var y_form = document.getElementById("form_y");
-	var y_form_value = y_form.options[y_form.selectedIndex].value;
+// Adding a form with the two select containing the columns
+function addForm() {
+	var form = d3.select("#form")
+		.append("form")
+		.attr("class", "form-inline");
 	
+	addSelect(form, data[0], "form_x");
+	addSelect(form, data[0], "form_y");
+}
+
+// Adding a select to the given form given the specified name and options
+function addSelect(form, options, name) {
+	var select = form.append("select")
+		.attr("id", name)
+		.attr("onchange", "refresh()");
+	
+	select.selectAll("option")
+		.data(d3.keys(options))
+		.enter()
+		.append("option")
+		.text(function(d) { return d; });
+
+	select.selectAll("option")
+		.data(d3.keys(options))
+		.attr("value", function(d) { return d; });
+}
+
+// Extracts the URL parameters
+function extractUrlParams() {
+	var t = location.search.substring(1).split('&');
+	var f = [];
+	for ( var i = 0; i < t.length; i++) {
+		var x = t[i].split('=');
+		f[x[0]] = x[1];
+	}
+	return f;
+}
+
+// Extracts the selected option from an HTML select
+function extractSelected(selectName) {
+	var x_form = document.getElementById(selectName);
+	return x_form.options[x_form.selectedIndex].value;
+}
+
+// Uses the x and y select to map data on the requested columns
+function mapData() {
+	var x_form_value = extractSelected("form_x");
+	var y_form_value = extractSelected("form_y");
 	data.forEach(function(d) {
 		d.x = +d[x_form_value];
 		d.y = +d[y_form_value];
@@ -57,10 +105,7 @@ function mapData() {
 }
 
 function refresh() {
-
 	mapData();
-	
-	console.log(data);
 	
 	x.domain(d3.extent(data, function(d) { return d.x; })).nice();
 	y.domain(d3.extent(data, function(d) { return d.y; })).nice();
@@ -68,18 +113,16 @@ function refresh() {
 	s = svg.selectAll(".dot").data(data, function(d) { return data.indexOf(d); });
 
 	s.enter().append("circle")
-		.attr("r", 1.5)
+		.attr("r", 3.5)
 		.attr('class', 'dot')
-		.attr("cx", function(d) { return x(d.x); })
-		.attr("cy", function(d) { return y(d.y); })
+		.attr("cx", function(d) { return x(d.x + ((Math.random() - 0.5) * 4)); })
+		.attr("cy", function(d) { return y(d.y + ((Math.random() - 0.5) * 2)); })
 		.style("fill", color(0));
 
 	s.transition().duration(500)
 		.attr("r", 3.5)
 		.attr("cx", function(d) { return x(d.x); })
-		.attr("cy", function(d) { return y(d.y); })
-		.style("fill", color(1));
+		.attr("cy", function(d) { return y(d.y); });
 
 	s.exit().remove();
-
 }
