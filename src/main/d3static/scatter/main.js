@@ -14,23 +14,22 @@ var y = d3.scale.linear().range([ height, 0 ]);
 
 //var color = d3.scale.category10();
 
-var xAxis = d3.svg.axis().scale(x).orient("bottom");
-var yAxis = d3.svg.axis().scale(y).orient("left");
+var xAxisScale = d3.svg.axis().scale(x).orient("bottom");
+var yAxisScale = d3.svg.axis().scale(y).orient("left");
 
 var svg = d3.select("#_graph").append("svg")
 	.attr("width", width + margin.left + margin.right)
 	.attr("height", height + margin.top + margin.bottom)
 	.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-svg.append("g")
+var xAxis = svg.append("g")
 	.attr("class", "x axis")
 	.attr("transform", "translate(0," + height + ")")
-	.call(xAxis)
+	.call(xAxisScale);
 
-svg.append("g")
+var yAxis = svg.append("g")
 	.attr("class", "y axis")
-	.call(yAxis);
-
+	.call(yAxisScale);
 
 var source = extractUrlParams()['source'];
 
@@ -44,13 +43,13 @@ d3.csv(source, function(error, d) {
 });
 
 function prepareColors() {
-	var names = d3.set(function(d) { return d.name; });
-	console.log(names);
-	if (names.values().length <= 10) {
+//	var names = d3.set(function(d) { return d.name; });
+//	console.log(names.values().length);
+//	if (names.values().length <= 10) {
 		color = d3.scale.category10().domain(d3.set(function(d) { return d.name; }));
-	} else {
-		color = d3.scale.category20().domain(d3.set(function(d) { return d.name; }));
-	}
+//	} else {
+//		color = d3.scale.category20().domain(d3.set(function(d) { return d.name; }));
+//	}
 }
 
 // Adding a form with the two select containing the columns
@@ -111,7 +110,9 @@ function refresh() {
 	mapData();
 	
 	x.domain(d3.extent(data, function(d) { return d.x; }));
+	xAxis.call(xAxisScale);
 	y.domain(d3.extent(data, function(d) { return d.y; }));
+	yAxis.call(yAxisScale);
 	
 	s = svg.selectAll(".dot").data(data, function(d) { return data.indexOf(d); });
 
