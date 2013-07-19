@@ -202,6 +202,7 @@ public class Shell {
 
 		String norm = rootDirectory + "/" + run + "/norm.csv";
 		String clustered = rootDirectory + "/" + run + "/cluster.csv";
+		String centroids = rootDirectory + "/" + run + "/centroids.csv";
 
 		CsvInfo normInfos = dataDao.inspectCSV(norm, 0);
 		if (normInfos == null) {
@@ -212,7 +213,8 @@ public class Shell {
 						normInfos.getColumns(), //
 						filter, //
 						dataDao.getSampleIterable(norm),//
-						dataDao.getSampleWriter(normInfos.getColumns(), clustered, true));
+						dataDao.getSampleWriter(normInfos.getColumns(), clustered, true),// sample
+						dataDao.getSampleWriter(normInfos.getColumns(), centroids, true)); // centroid
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 				rv.addErr(e.getMessage());
@@ -222,7 +224,7 @@ public class Shell {
 			}
 		}
 
-		inspectCsv(clustered, 5, rv);
+		inspectCsv(clustered, 0, rv);
 
 	}
 
@@ -320,6 +322,25 @@ public class Shell {
 			rv.addErr("cannot load if no current run. Create or open one");
 		} else {
 			dataDao.generateRandomCSV(destPath, nbVariables, nbSamples);
+			inspectCsv(destPath, 0, rv);
+		}
+
+		return rv;
+	}
+
+	// ----------------- sample ---------------
+
+	@Command
+	public ShellView sample(String source, String dest, double rate) {
+		ShellView rv = new ShellView();
+
+		String sourcePath = path(source, rv);
+		String destPath = path(dest, rv);
+
+		if (run == null) {
+			rv.addErr("cannot load if no current run. Create or open one");
+		} else {
+			dataDao.copyCSV(sourcePath, destPath, null, rate);
 			inspectCsv(destPath, 0, rv);
 		}
 

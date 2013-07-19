@@ -1,6 +1,7 @@
 package net.airvantage.taukari.processor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +18,7 @@ import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 public class Clusterer {
 
 	public void clusterSamples(int nbClusters, String[] variables, String[] variablesToUse, SampleIterable samples,
-			SampleWriter writer) {
+			SampleWriter sampleWriter, SampleWriter centroidWriter) {
 
 		int[] variableIndices = getVariableIndices(variables, variablesToUse);
 
@@ -32,13 +33,19 @@ public class Clusterer {
 		try {
 			int i = 0;
 			for (CentroidCluster<Point> cl : cluster) {
+				String clusterName = "cluster" + i;
 				for (Point point : cl.getPoints()) {
-					writer.writeSample(new Sample(point.s.getContent(), "cluster" + i));
+					sampleWriter.writeSample(new Sample(point.s.getContent(), clusterName));
 				}
+				double[] centroidData = cl.getCenter().getPoint();
+				double[] copyOf = Arrays.copyOf(centroidData, centroidData.length + 1);
+				copyOf[centroidData.length] = cl.getPoints().size();
+				centroidWriter.writeSample(new Sample(copyOf, clusterName));
 				i++;
 			}
 		} finally {
-			IOUtils.closeQuietly(writer);
+			IOUtils.closeQuietly(sampleWriter);
+			IOUtils.closeQuietly(centroidWriter);
 		}
 	}
 
