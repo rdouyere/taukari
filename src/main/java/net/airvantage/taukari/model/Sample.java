@@ -13,18 +13,35 @@ import java.util.Arrays;
 public class Sample {
 
 	private final double[] content;
+	private final String name;
+
+	public Sample(double[] content, String name) {
+		this.content = content;
+		this.name = name;
+	}
 
 	public Sample(double[] content) {
-		this.content = content;
+		this(content, null);
 	}
 
 	public double[] getContent() {
 		return content;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	@Override
 	public String toString() {
-		return Arrays.toString(content);
+		StringBuilder sb = new StringBuilder();
+		if (name != null) {
+			sb.append(name);
+		}
+		if (content != null) {
+			sb.append(Arrays.toString(content));
+		}
+		return sb.toString();
 	}
 
 }

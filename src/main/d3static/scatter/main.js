@@ -12,7 +12,7 @@ var height = 500 - margin.top - margin.bottom;
 var x = d3.scale.linear().range([ 0, width ]);
 var y = d3.scale.linear().range([ height, 0 ]);
 
-var color = d3.scale.category10();
+//var color = d3.scale.category10();
 
 var xAxis = d3.svg.axis().scale(x).orient("bottom");
 var yAxis = d3.svg.axis().scale(y).orient("left");
@@ -39,15 +39,26 @@ data = [];
 d3.csv(source, function(error, d) {
 	data = d;
 	addForm();
+	prepareColors();
 	refresh();
 });
+
+function prepareColors() {
+	var names = d3.set(function(d) { return d.name; });
+	console.log(names);
+	if (names.values().length <= 10) {
+		color = d3.scale.category10().domain(d3.set(function(d) { return d.name; }));
+	} else {
+		color = d3.scale.category20().domain(d3.set(function(d) { return d.name; }));
+	}
+}
 
 // Adding a form with the two select containing the columns
 function addForm() {
 	var form = d3.select("#form")
 		.append("form")
 		.attr("class", "form-inline");
-	
+
 	addSelect(form, data[0], "form_x");
 	addSelect(form, data[0], "form_y");
 }
@@ -101,7 +112,7 @@ function refresh() {
 	
 	x.domain(d3.extent(data, function(d) { return d.x; }));
 	y.domain(d3.extent(data, function(d) { return d.y; }));
-
+	
 	s = svg.selectAll(".dot").data(data, function(d) { return data.indexOf(d); });
 
 	s.enter().append("circle")
@@ -109,9 +120,9 @@ function refresh() {
 		.attr('class', 'dot')
 		.attr("cx", function(d) { return x(d.x + ((Math.random() - 0.5) * 4)); })
 		.attr("cy", function(d) { return y(d.y + ((Math.random() - 0.5) * 2)); })
-		.style("fill", color(0));
+		.style("fill", function(d) { return color(d.name); });
 
-	s.transition().duration(500)
+	s.transition().duration(800)
 		.attr("r", 3.5)
 		.attr("cx", function(d) { return x(d.x); })
 		.attr("cy", function(d) { return y(d.y); });

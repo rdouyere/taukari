@@ -20,8 +20,13 @@ public class DataDao {
 		return new SampleIterable(path);
 	}
 
+	public SampleWriter getSampleWriter(String[] headers, String path, boolean writeName) throws IOException {
+		return new SampleWriter(headers, new CSVWriter(new FileWriter(path), ',', CSVWriter.NO_QUOTE_CHARACTER),
+				writeName);
+	}
+
 	public SampleWriter getSampleWriter(String[] headers, String path) throws IOException {
-		return new SampleWriter(headers, new CSVWriter(new FileWriter(path), ',', CSVWriter.NO_QUOTE_CHARACTER));
+		return new SampleWriter(headers, new CSVWriter(new FileWriter(path), ',', CSVWriter.NO_QUOTE_CHARACTER), false);
 	}
 
 	/**

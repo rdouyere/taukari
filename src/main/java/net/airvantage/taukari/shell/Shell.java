@@ -8,6 +8,7 @@ import java.util.Set;
 import net.airvantage.taukari.dao.CsvInfo;
 import net.airvantage.taukari.dao.DataDao;
 import net.airvantage.taukari.dao.RunDao;
+import net.airvantage.taukari.processor.Clusterer;
 import net.airvantage.taukari.processor.Normalizer;
 import net.airvantage.taukari.shell.ShellView.ReturnViewConvertor;
 import asg.cliche.Command;
@@ -32,18 +33,22 @@ public class Shell {
 
 	private final Normalizer normalizer;
 
+	private final Clusterer clusterer;
+
 	private String run;
 
-	public Shell(String rootDirectory, RunDao runDao, DataDao dataDao, Normalizer normalizer) {
+	public Shell(String rootDirectory, RunDao runDao, DataDao dataDao, Normalizer normalizer, Clusterer clusterer) {
 		this.rootDirectory = rootDirectory;
 		this.runDao = runDao;
 		this.dataDao = dataDao;
 		this.normalizer = normalizer;
+		this.clusterer = clusterer;
 	}
 
 	public static void main(String[] args) throws IOException {
 		String rootDirectory = "/tmp/mining"; // TODO
-		Shell cli = new Shell(rootDirectory, new RunDao(rootDirectory), new DataDao(), new Normalizer());
+		Shell cli = new Shell(rootDirectory, new RunDao(rootDirectory), new DataDao(), new Normalizer(),
+				new Clusterer());
 		ShellFactory.createConsoleShell("", null, cli).commandLoop();
 	}
 
@@ -140,6 +145,8 @@ public class Shell {
 		return rv;
 	}
 
+	// ----------------- normalize ---------------
+
 	@Command(abbrev = "norm")
 	public ShellView normalize() {
 		ShellView rv = new ShellView();
@@ -164,6 +171,59 @@ public class Shell {
 		inspectCsv(norm, 5, rv);
 
 		return rv;
+	}
+
+	// ----------------- cluster ---------------
+
+	@Command(abbrev = "cluster")
+	public ShellView cluster(int nb) {
+		ShellView rv = new ShellView();
+
+		cluster(rv, nb, null);
+
+		return rv;
+	}
+
+	@Command(abbrev = "cluster")
+	public ShellView cluster(int nb, String filter) {
+		ShellView rv = new ShellView();
+
+		String[] ff = null;
+		if (filter != null) {
+			ff = filter.split(",");
+		}
+
+		cluster(rv, nb, ff);
+
+		return rv;
+	}
+
+	private void cluster(ShellView rv, int nb, String[] filter) {
+
+		String norm = rootDirectory + "/" + run + "/norm.csv";
+		String clustered = rootDirectory + "/" + run + "/cluster.csv";
+
+		CsvInfo normInfos = dataDao.inspectCSV(norm, 0);
+		if (normInfos == null) {
+			rv.addErr("missing norm");
+		} else {
+			try {
+				clusterer.clusterSamples(nb,//
+						normInfos.getColumns(), //
+						filter, //
+						dataDao.getSampleIterable(norm),//
+						dataDao.getSampleWriter(normInfos.getColumns(), clustered, true));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				rv.addErr(e.getMessage());
+			} catch (IOException e) {
+				e.printStackTrace();
+				rv.addErr(e.getMessage());
+			}
+		}
+
+		inspectCsv(clustered, 5, rv);
+
 	}
 
 	// ----------------- inspect-csv ---------------
