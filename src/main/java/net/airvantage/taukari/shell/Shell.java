@@ -140,8 +140,8 @@ public class Shell {
 		return rv;
 	}
 
-	@Command
-	public ShellView normalized() {
+	@Command(abbrev = "norm")
+	public ShellView normalize() {
 		ShellView rv = new ShellView();
 
 		String input = rootDirectory + "/" + run + "/input.csv";
@@ -160,6 +160,8 @@ public class Shell {
 			e.printStackTrace();
 			rv.addErr(e.getMessage());
 		}
+
+		inspectCsv(norm, 5, rv);
 
 		return rv;
 	}

@@ -5,40 +5,45 @@ import net.airvantage.taukari.dao.SampleWriter;
 import net.airvantage.taukari.model.Sample;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.math3.stat.descriptive.MultivariateSummaryStatistics;
 
 /**
  * Stream based vector normalization.
  */
 public class Normalizer {
 
+	/**
+	 * Normalizes a stream of samples.
+	 * <p>
+	 * It requires to scan the the sample stream twice. It is expected that the
+	 * stream content does not change in between!
+	 * </p>
+	 * 
+	 * @param nbVariables
+	 *            the number of variables of the samples
+	 * @param samples
+	 *            the input sample stream (which will be traveled twice)
+	 * @param writer
+	 *            the output, normalize samples.
+	 */
 	public void normalizeSamples(int nbVariables, SampleIterable samples, SampleWriter writer) {
 
 		try {
-			LNorm[] norms = new LNorm[nbVariables];
-			for (int i = 0; i < nbVariables; i++) {
-				norms[i] = new LNorm();
-			}
-
-			// First loop
+			// First loop: compute standard deviation & mean
+			MultivariateSummaryStatistics mss = new MultivariateSummaryStatistics(nbVariables, true);
 			for (Sample s : samples) {
-				System.out.println(s);
 				// For each variable
-				for (int i = 0; i < nbVariables; i++) {
-					norms[i].increment(s.getContent()[i]);
-				}
+				mss.addValue(s.getContent());
 			}
 
-			for (int i = 0; i < nbVariables; i++) {
-				norms[i].terminate();
-			}
-
+			// Second loop compute normalized values
 			for (Sample s : samples) {
 				double[] out = new double[s.getContent().length];
 				for (int i = 0; i < nbVariables; i++) {
-					if (norms[i].getStdev() == 0) {
-						out[i] = s.getContent()[i] - norms[i].getMean();
+					if (mss.getStandardDeviation()[i] == 0) {
+						out[i] = s.getContent()[i] - mss.getMean()[i];
 					} else {
-						out[i] = (s.getContent()[i] - norms[i].getMean()) / norms[i].getStdev();
+						out[i] = (s.getContent()[i] - mss.getMean()[i]) / mss.getStandardDeviation()[i];
 					}
 				}
 				Sample sout = new Sample(out);
@@ -47,7 +52,6 @@ public class Normalizer {
 		} finally {
 			IOUtils.closeQuietly(writer);
 		}
-
 	}
 
 }

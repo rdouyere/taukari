@@ -31,22 +31,14 @@ svg.append("g")
 	.attr("class", "y axis")
 	.call(yAxis);
 
- 
+
 var source = extractUrlParams()['source'];
 
 // load CSV
 data = [];
 d3.csv(source, function(error, d) {
 	data = d;
-
 	addForm();
-	
-	mapData();
-
-	x.domain(d3.extent(data, function(d) { return d.x; })).nice();
-	y.domain(d3.extent(data, function(d) { return d.y; })).nice();
-
-	
 	refresh();
 });
 
@@ -107,8 +99,8 @@ function mapData() {
 function refresh() {
 	mapData();
 	
-	x.domain(d3.extent(data, function(d) { return d.x; })).nice();
-	y.domain(d3.extent(data, function(d) { return d.y; })).nice();
+	x.domain(d3.extent(data, function(d) { return d.x; }));
+	y.domain(d3.extent(data, function(d) { return d.y; }));
 
 	s = svg.selectAll(".dot").data(data, function(d) { return data.indexOf(d); });
 
