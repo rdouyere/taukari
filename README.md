@@ -10,3 +10,12 @@ It features
 CSV files represents sets of samples which have a set of numeric variables. 
 
 Other data manipulation and visualizations to come later :) 
+
+
+Howto launch the shell
+----------------------
+
+	mvn clean package
+	cd target
+	java -jar taukari-1.0-SNAPSHOT.jar
+

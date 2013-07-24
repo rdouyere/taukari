@@ -49,7 +49,7 @@ public class Shell {
 		String rootDirectory = "/tmp/mining"; // TODO
 		Shell cli = new Shell(rootDirectory, new RunDao(rootDirectory), new DataDao(), new Normalizer(),
 				new Clusterer());
-		ShellFactory.createConsoleShell("", null, cli).commandLoop();
+		ShellFactory.createConsoleShell("Taukari", null, cli).commandLoop();
 	}
 
 	@Command(abbrev = "ls", description = "lists existing runs")
