@@ -9,6 +9,10 @@ import org.apache.commons.math3.stat.descriptive.MultivariateSummaryStatistics;
 
 /**
  * Stream based vector normalization.
+ * <p>
+ * Normalized vector has a mean equals to 0 and a standard deviation equals to
+ * 1.
+ * </p>
  */
 public class Normalizer {
 

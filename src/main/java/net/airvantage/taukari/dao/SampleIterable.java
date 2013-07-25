@@ -8,7 +8,7 @@ import net.airvantage.taukari.model.Sample;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
- * Iterable of sample backed by a CSV file.
+ * {@link Iterable} of sample backed by a CSV file.
  */
 public class SampleIterable implements Iterable<Sample> {
 

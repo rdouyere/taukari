@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.Set;
 
 import net.airvantage.taukari.dao.CsvInfo;
-import net.airvantage.taukari.dao.DataDao;
-import net.airvantage.taukari.dao.RunDao;
+import net.airvantage.taukari.dao.CsvManager;
+import net.airvantage.taukari.dao.RunManager;
 import net.airvantage.taukari.processor.Clusterer;
 import net.airvantage.taukari.processor.Normalizer;
 import net.airvantage.taukari.shell.ShellView.ReturnViewConvertor;
@@ -26,9 +26,9 @@ public class Shell {
 
 	public static final OutputConverter[] CLI_OUTPUT_CONVERTERS = { new ReturnViewConvertor() };
 
-	private final RunDao runDao;
+	private final RunManager runManager;
 
-	private final DataDao dataDao;
+	private final CsvManager csvManager;
 
 	private final Normalizer normalizer;
 
@@ -38,15 +38,15 @@ public class Shell {
 
 	static String rootDirectory = "/tmp/taukari";
 
-	public Shell(RunDao runDao, DataDao dataDao, Normalizer normalizer, Clusterer clusterer) {
-		this.runDao = runDao;
-		this.dataDao = dataDao;
+	public Shell(RunManager runManager, CsvManager csvManager, Normalizer normalizer, Clusterer clusterer) {
+		this.runManager = runManager;
+		this.csvManager = csvManager;
 		this.normalizer = normalizer;
 		this.clusterer = clusterer;
 	}
 
 	public static void main(String[] args) throws IOException {
-		Shell cli = new Shell(new RunDao(rootDirectory), new DataDao(), new Normalizer(), new Clusterer());
+		Shell cli = new Shell(new RunManager(), new CsvManager(), new Normalizer(), new Clusterer());
 		ShellFactory.createConsoleShell(
 				"Taukari",
 				"Welcome to Taukari. Current working directory is '" + rootDirectory
@@ -65,7 +65,7 @@ public class Shell {
 
 	@Command(abbrev = "ls", description = "lists existing runs")
 	public ShellView list() {
-		return new ShellView(runDao.list(rootDirectory));
+		return new ShellView(runManager.list(rootDirectory));
 	}
 
 	@Command(abbrev = "lr", description = "list content of a run")
@@ -87,10 +87,10 @@ public class Shell {
 			if (run == null) {
 				rv.addErr("no opened run, could not use relative notation");
 			} else {
-				rv.addMsg(runDao.list(rootDirectory + File.separator + run));
+				rv.addMsg(runManager.list(rootDirectory + File.separator + run));
 			}
 		} else {
-			rv.addMsg(runDao.list(rootDirectory + File.separator + runName));
+			rv.addMsg(runManager.list(rootDirectory + File.separator + runName));
 		}
 	}
 
@@ -98,9 +98,11 @@ public class Shell {
 	public ShellView open(@Param(name = "name", description = "the run name") String name) {
 		ShellView rv = new ShellView();
 
+		String path = rootDirectory + File.separator + name;
+
 		unload(rv);
 
-		if (runDao.exists(name)) {
+		if (runManager.exists(path)) {
 			rv.addMsg("opened: " + name);
 			run = name;
 		} else {
@@ -141,14 +143,16 @@ public class Shell {
 	public ShellView create(String name) {
 		ShellView rv = new ShellView();
 
+		String path = rootDirectory + File.separator + name;
+
 		unload(rv);
 
 		// check
-		if (runDao.exists(name)) {
+		if (runManager.exists(path)) {
 			rv.addErr("already existing run");
 		} else {
 			run = name;
-			runDao.create(name);
+			runManager.create(path);
 			rv.addMsg("created: " + run);
 			rv.addMsg("opened: " + run);
 		}
@@ -165,12 +169,12 @@ public class Shell {
 		String input = rootDirectory + File.separator + run + File.separator + "input.csv";
 		String norm = rootDirectory + File.separator + run + File.separator + "norm.csv";
 
-		CsvInfo inputInfos = dataDao.inspectCSV(input, 0);
+		CsvInfo inputInfos = csvManager.inspectCSV(input, 0);
 
 		try {
 			normalizer.normalizeSamples(inputInfos.getColumns().length, //
-					dataDao.getSampleIterable(input),//
-					dataDao.getSampleWriter(inputInfos.getColumns(), norm));
+					csvManager.getSampleIterable(input),//
+					csvManager.getSampleWriter(inputInfos.getColumns(), norm));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			rv.addErr(e.getMessage());
@@ -215,7 +219,7 @@ public class Shell {
 		String clustered = rootDirectory + File.separator + run + File.separator + "cluster.csv";
 		String centroids = rootDirectory + File.separator + run + File.separator + "centroids.csv";
 
-		CsvInfo normInfos = dataDao.inspectCSV(norm, 0);
+		CsvInfo normInfos = csvManager.inspectCSV(norm, 0);
 		if (normInfos == null) {
 			rv.addErr("missing norm");
 		} else {
@@ -223,9 +227,9 @@ public class Shell {
 				clusterer.clusterSamples(nb,//
 						normInfos.getColumns(), //
 						filter, //
-						dataDao.getSampleIterable(norm),//
-						dataDao.getSampleWriter(normInfos.getColumns(), clustered, true),// sample
-						dataDao.getSampleWriter(normInfos.getColumns(), centroids, true)); // centroid
+						csvManager.getSampleIterable(norm),//
+						csvManager.getSampleWriter(normInfos.getColumns(), clustered, true),// sample
+						csvManager.getSampleWriter(normInfos.getColumns(), centroids, true)); // centroid
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 				rv.addErr(e.getMessage());
@@ -261,7 +265,7 @@ public class Shell {
 	private void inspectCsv(String path, int nbSamples, ShellView rv) {
 		String path_ = path(path, rv);
 		if (path_ != null) {
-			CsvInfo csvInfos = dataDao.inspectCSV(path_, nbSamples);
+			CsvInfo csvInfos = csvManager.inspectCSV(path_, nbSamples);
 			if (csvInfos == null) {
 				rv.addErr("could not inspect csv file");
 			} else {
@@ -315,7 +319,7 @@ public class Shell {
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
 		} else {
-			dataDao.copyCSV(name, destPath, columns, sampleRate);
+			csvManager.copyCSV(name, destPath, columns, sampleRate);
 			inspectCsv(destPath, 0, rv);
 		}
 
@@ -332,7 +336,7 @@ public class Shell {
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
 		} else {
-			dataDao.generateRandomCSV(destPath, nbVariables, nbSamples);
+			csvManager.generateRandomCSV(destPath, nbVariables, nbSamples);
 			inspectCsv(destPath, 0, rv);
 		}
 
@@ -351,7 +355,7 @@ public class Shell {
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
 		} else {
-			dataDao.copyCSV(sourcePath, destPath, null, rate);
+			csvManager.copyCSV(sourcePath, destPath, null, rate);
 			inspectCsv(destPath, 0, rv);
 		}
 

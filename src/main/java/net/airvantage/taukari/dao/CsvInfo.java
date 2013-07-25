@@ -1,5 +1,6 @@
 package net.airvantage.taukari.dao;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,6 +29,11 @@ public class CsvInfo {
 
 	public List<String[]> getSamples() {
 		return samples;
+	}
+
+	@Override
+	public String toString() {
+		return "CsvInfo [columns=" + Arrays.toString(columns) + ", nbLines=" + nbLines + ", samples=" + samples + "]";
 	}
 
 }

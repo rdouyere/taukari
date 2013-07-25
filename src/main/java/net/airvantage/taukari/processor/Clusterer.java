@@ -15,8 +15,33 @@ import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 
+/**
+ * Processes a set of samples and generates clusters on some of the variables.
+ */
 public class Clusterer {
 
+	/**
+	 * Generates the clusters on the data using simple K-means++ algorithm.
+	 * 
+	 * Warning: even if we give {@link Iterable}, the implementation will load
+	 * everything in memory.
+	 * 
+	 * @param nbClusters
+	 *            the number of clusters to generate
+	 * @param variables
+	 *            all the variables of the samples (ordered as in the CSV)
+	 * @param variablesToUse
+	 *            the variables to use in the clustering
+	 * @param samples
+	 *            the {@link Iterable} on samples
+	 * @param sampleWriter
+	 *            the writer for samples with the clusters added. Can be null,
+	 *            samples with cluster names will not be written to disk in the
+	 *            case.
+	 * @param centroidWriter
+	 *            the writer for the centroids. Can be null, centroids will not
+	 *            be written to disk in the case.
+	 */
 	public void clusterSamples(int nbClusters, String[] variables, String[] variablesToUse, SampleIterable samples,
 			SampleWriter sampleWriter, SampleWriter centroidWriter) {
 
@@ -34,13 +59,17 @@ public class Clusterer {
 			int i = 0;
 			for (CentroidCluster<Point> cl : cluster) {
 				String clusterName = "cluster" + i;
-				for (Point point : cl.getPoints()) {
-					sampleWriter.writeSample(new Sample(point.s.getContent(), clusterName));
+				if (sampleWriter != null) {
+					for (Point point : cl.getPoints()) {
+						sampleWriter.writeSample(new Sample(point.s.getContent(), clusterName));
+					}
 				}
 				double[] centroidData = cl.getCenter().getPoint();
 				double[] copyOf = Arrays.copyOf(centroidData, centroidData.length + 1);
 				copyOf[centroidData.length] = cl.getPoints().size();
-				centroidWriter.writeSample(new Sample(copyOf, clusterName));
+				if (centroidWriter != null) {
+					centroidWriter.writeSample(new Sample(copyOf, clusterName));
+				}
 				i++;
 			}
 		} finally {
@@ -78,9 +107,6 @@ public class Clusterer {
 				}
 			}
 
-			// System.out.println(Arrays.toString(variables));
-			// System.out.println(Arrays.toString(variablesToUse));
-			// System.out.println(Arrays.toString(ret));
 		}
 
 		return ret;

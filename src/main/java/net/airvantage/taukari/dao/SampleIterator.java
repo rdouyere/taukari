@@ -54,7 +54,11 @@ public class SampleIterator implements Iterator<Sample>, Closeable {
 			if (readNext != null && readNext.length > 0) {
 				double[] doubles = new double[readNext.length];
 				for (int i = 0; i < readNext.length; i++) {
-					doubles[i] = Double.parseDouble(readNext[i]);
+					try {
+						doubles[i] = Double.parseDouble(readNext[i]);
+					} catch (NumberFormatException e) {
+
+					}
 				}
 				next = new Sample(doubles);
 			} else {

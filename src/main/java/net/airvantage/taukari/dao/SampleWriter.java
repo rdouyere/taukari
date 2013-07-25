@@ -27,6 +27,12 @@ public class SampleWriter implements Closeable {
 		}
 	}
 
+	/**
+	 * Appends the sample at the end of the file.
+	 * 
+	 * @param s
+	 *            the sample to write.
+	 */
 	public void writeSample(Sample s) {
 		String[] output = null;
 		if (writeName) {
