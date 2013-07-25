@@ -87,10 +87,10 @@ public class Shell {
 			if (run == null) {
 				rv.addErr("no opened run, could not use relative notation");
 			} else {
-				rv.addMsg(runDao.list(rootDirectory + File.pathSeparator + run));
+				rv.addMsg(runDao.list(rootDirectory + File.separator + run));
 			}
 		} else {
-			rv.addMsg(runDao.list(rootDirectory + File.pathSeparator + runName));
+			rv.addMsg(runDao.list(rootDirectory + File.separator + runName));
 		}
 	}
 
@@ -162,8 +162,8 @@ public class Shell {
 	public ShellView normalize() {
 		ShellView rv = new ShellView();
 
-		String input = rootDirectory + File.pathSeparator + run + File.pathSeparator + "input.csv";
-		String norm = rootDirectory + File.pathSeparator + run + File.pathSeparator + "norm.csv";
+		String input = rootDirectory + File.separator + run + File.separator + "input.csv";
+		String norm = rootDirectory + File.separator + run + File.separator + "norm.csv";
 
 		CsvInfo inputInfos = dataDao.inspectCSV(input, 0);
 
@@ -211,9 +211,9 @@ public class Shell {
 
 	private void cluster(ShellView rv, int nb, String[] filter) {
 
-		String norm = rootDirectory + File.pathSeparator + run + File.pathSeparator + "norm.csv";
-		String clustered = rootDirectory + File.pathSeparator + run + File.pathSeparator + "cluster.csv";
-		String centroids = rootDirectory + File.pathSeparator + run + File.pathSeparator + "centroids.csv";
+		String norm = rootDirectory + File.separator + run + File.separator + "norm.csv";
+		String clustered = rootDirectory + File.separator + run + File.separator + "cluster.csv";
+		String centroids = rootDirectory + File.separator + run + File.separator + "centroids.csv";
 
 		CsvInfo normInfos = dataDao.inspectCSV(norm, 0);
 		if (normInfos == null) {
@@ -310,7 +310,7 @@ public class Shell {
 	}
 
 	private void loadCsv(String name, Set<String> columns, Double sampleRate, ShellView rv) {
-		String destPath = rootDirectory + File.pathSeparator + run + File.pathSeparator + "input.csv";
+		String destPath = rootDirectory + File.separator + run + File.separator + "input.csv";
 
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
@@ -327,7 +327,7 @@ public class Shell {
 	public ShellView loadRandom(int nbVariables, int nbSamples) {
 		ShellView rv = new ShellView();
 
-		String destPath = rootDirectory + File.pathSeparator + run + File.pathSeparator + "input.csv";
+		String destPath = rootDirectory + File.separator + run + File.separator + "input.csv";
 
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
@@ -366,7 +366,7 @@ public class Shell {
 				ret = null;
 				rv.addErr("relative path requires an open run");
 			} else {
-				ret = rootDirectory + File.pathSeparator + run + File.pathSeparator + path.substring(1, path.length());
+				ret = rootDirectory + File.separator + run + File.separator + path.substring(1, path.length());
 			}
 		}
 
