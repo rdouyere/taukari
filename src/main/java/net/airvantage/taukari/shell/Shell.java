@@ -1,5 +1,6 @@
 package net.airvantage.taukari.shell;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,8 +26,6 @@ public class Shell {
 
 	public static final OutputConverter[] CLI_OUTPUT_CONVERTERS = { new ReturnViewConvertor() };
 
-	private final String rootDirectory;
-
 	private final RunDao runDao;
 
 	private final DataDao dataDao;
@@ -37,8 +36,9 @@ public class Shell {
 
 	private String run;
 
-	public Shell(String rootDirectory, RunDao runDao, DataDao dataDao, Normalizer normalizer, Clusterer clusterer) {
-		this.rootDirectory = rootDirectory;
+	static String rootDirectory = "/tmp/taukari";
+
+	public Shell(RunDao runDao, DataDao dataDao, Normalizer normalizer, Clusterer clusterer) {
 		this.runDao = runDao;
 		this.dataDao = dataDao;
 		this.normalizer = normalizer;
@@ -46,10 +46,21 @@ public class Shell {
 	}
 
 	public static void main(String[] args) throws IOException {
-		String rootDirectory = "/tmp/mining"; // TODO
-		Shell cli = new Shell(rootDirectory, new RunDao(rootDirectory), new DataDao(), new Normalizer(),
-				new Clusterer());
-		ShellFactory.createConsoleShell("Taukari", null, cli).commandLoop();
+		Shell cli = new Shell(new RunDao(rootDirectory), new DataDao(), new Normalizer(), new Clusterer());
+		ShellFactory.createConsoleShell(
+				"Taukari",
+				"Welcome to Taukari. Current working directory is '" + rootDirectory
+						+ "' use the 'root-set' command to change it.", cli).commandLoop();
+	}
+
+	@Command(abbrev = "rset", description = "Sets the  working directory")
+	public void rootSet(String root) {
+		rootDirectory = root;
+	}
+
+	@Command(abbrev = "rshow", description = "Shows the current working directory")
+	public ShellView rootShow() {
+		return new ShellView(rootDirectory);
 	}
 
 	@Command(abbrev = "ls", description = "lists existing runs")
@@ -76,10 +87,10 @@ public class Shell {
 			if (run == null) {
 				rv.addErr("no opened run, could not use relative notation");
 			} else {
-				rv.addMsg(runDao.list(rootDirectory + "/" + run));
+				rv.addMsg(runDao.list(rootDirectory + File.pathSeparator + run));
 			}
 		} else {
-			rv.addMsg(runDao.list(rootDirectory + "/" + runName));
+			rv.addMsg(runDao.list(rootDirectory + File.pathSeparator + runName));
 		}
 	}
 
@@ -151,8 +162,8 @@ public class Shell {
 	public ShellView normalize() {
 		ShellView rv = new ShellView();
 
-		String input = rootDirectory + "/" + run + "/input.csv";
-		String norm = rootDirectory + "/" + run + "/norm.csv";
+		String input = rootDirectory + File.pathSeparator + run + File.pathSeparator + "input.csv";
+		String norm = rootDirectory + File.pathSeparator + run + File.pathSeparator + "norm.csv";
 
 		CsvInfo inputInfos = dataDao.inspectCSV(input, 0);
 
@@ -200,9 +211,9 @@ public class Shell {
 
 	private void cluster(ShellView rv, int nb, String[] filter) {
 
-		String norm = rootDirectory + "/" + run + "/norm.csv";
-		String clustered = rootDirectory + "/" + run + "/cluster.csv";
-		String centroids = rootDirectory + "/" + run + "/centroids.csv";
+		String norm = rootDirectory + File.pathSeparator + run + File.pathSeparator + "norm.csv";
+		String clustered = rootDirectory + File.pathSeparator + run + File.pathSeparator + "cluster.csv";
+		String centroids = rootDirectory + File.pathSeparator + run + File.pathSeparator + "centroids.csv";
 
 		CsvInfo normInfos = dataDao.inspectCSV(norm, 0);
 		if (normInfos == null) {
@@ -299,7 +310,7 @@ public class Shell {
 	}
 
 	private void loadCsv(String name, Set<String> columns, Double sampleRate, ShellView rv) {
-		String destPath = rootDirectory + "/" + run + "/input.csv";
+		String destPath = rootDirectory + File.pathSeparator + run + File.pathSeparator + "input.csv";
 
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
@@ -316,7 +327,7 @@ public class Shell {
 	public ShellView loadRandom(int nbVariables, int nbSamples) {
 		ShellView rv = new ShellView();
 
-		String destPath = rootDirectory + "/" + run + "/input.csv";
+		String destPath = rootDirectory + File.pathSeparator + run + File.pathSeparator + "input.csv";
 
 		if (run == null) {
 			rv.addErr("cannot load if no current run. Create or open one");
@@ -355,7 +366,7 @@ public class Shell {
 				ret = null;
 				rv.addErr("relative path requires an open run");
 			} else {
-				ret = rootDirectory + "/" + run + "/" + path.substring(1, path.length());
+				ret = rootDirectory + File.pathSeparator + run + File.pathSeparator + path.substring(1, path.length());
 			}
 		}
 

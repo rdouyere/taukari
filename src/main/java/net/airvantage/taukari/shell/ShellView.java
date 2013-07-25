@@ -21,6 +21,10 @@ public class ShellView {
 
 	}
 
+	public ShellView(String msg) {
+		addMsg(msg);
+	}
+
 	public ShellView(List<String> msgs) {
 		for (String msg : msgs) {
 			addMsg(msg);

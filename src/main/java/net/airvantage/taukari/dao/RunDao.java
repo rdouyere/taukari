@@ -37,6 +37,6 @@ public class RunDao {
 	}
 
 	private String getDirectory(String name) {
-		return rootDirectory + "/" + name;
+		return rootDirectory + File.pathSeparator + name;
 	}
 }
