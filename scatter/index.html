@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="../css/bootstrap.min.css" rel="stylesheet" media="screen">
+<style>
+body {
+	font: 10px sans-serif;
+}
+
+.axis path,.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+circle {
+	fill: #ccc;
+ 	fill-opacity: .5; 
+}
+</style>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="span4 text-center">	
+			<img src="../img/taukari.png"  width="125" height="68"/>
+			<legend>Scatter</legend>
+			<div class="text-center" id="form">
+			</div>
+		</div>
+		<div class="span5">
+			<div id="_graph"></div>
+		</div>
+	</div> 
+	<script src="main.js"></script>
+</body>
+</html>
