@@ -3,15 +3,22 @@ package net.airvantage.taukari.shell;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import net.airvantage.taukari.dao.CsvInfo;
 import net.airvantage.taukari.dao.CsvManager;
 import net.airvantage.taukari.dao.RunManager;
+import net.airvantage.taukari.dao.SampleWriter;
 import net.airvantage.taukari.processor.Clusterer;
+import net.airvantage.taukari.processor.HClusterer;
 import net.airvantage.taukari.processor.Normalizer;
 import net.airvantage.taukari.shell.ShellView.ReturnViewConvertor;
+
+import org.apache.commons.io.IOUtils;
+
 import asg.cliche.Command;
 import asg.cliche.OutputConverter;
 import asg.cliche.Param;
@@ -34,19 +41,23 @@ public class Shell {
 
 	private final Clusterer clusterer;
 
+	private final HClusterer hClusterer;
+
 	private String run;
 
 	static String rootDirectory = "/tmp/taukari";
 
-	public Shell(RunManager runManager, CsvManager csvManager, Normalizer normalizer, Clusterer clusterer) {
+	public Shell(RunManager runManager, CsvManager csvManager, Normalizer normalizer, Clusterer clusterer,
+			HClusterer hClusterer) {
 		this.runManager = runManager;
 		this.csvManager = csvManager;
 		this.normalizer = normalizer;
 		this.clusterer = clusterer;
+		this.hClusterer = hClusterer;
 	}
 
 	public static void main(String[] args) throws IOException {
-		Shell cli = new Shell(new RunManager(), new CsvManager(), new Normalizer(), new Clusterer());
+		Shell cli = new Shell(new RunManager(), new CsvManager(), new Normalizer(), new Clusterer(), new HClusterer());
 		ShellFactory.createConsoleShell(
 				"Taukari",
 				"Welcome to Taukari. Current working directory is '" + rootDirectory
@@ -243,6 +254,64 @@ public class Shell {
 
 	}
 
+	// ----------------- hcluster ---------------
+
+	@Command(abbrev = "hcluster")
+	public ShellView hcluster(String filter) {
+		ShellView rv = new ShellView();
+
+		String[] ff = null;
+		if (filter != null) {
+			ff = filter.split(",");
+		}
+
+		hcluster(rv, ff);
+
+		return rv;
+	}
+
+	private void hcluster(ShellView rv, String[] filter) {
+
+		String norm = rootDirectory + File.separator + run + File.separator + "norm.csv";
+		String clustered = rootDirectory + File.separator + run + File.separator + "hcluster.csv";
+
+		CsvInfo normInfos = csvManager.inspectCSV(norm, 0);
+		if (normInfos == null) {
+			rv.addErr("missing norm");
+		} else {
+			List<String> clusteredColumns = new ArrayList<String>();
+			for (String normCol : normInfos.getColumns()) {
+				clusteredColumns.add(normCol);
+			}
+			clusteredColumns.add("cl_level");
+			clusteredColumns.add("cl_nbLeaves");
+			clusteredColumns.add("cl_radius");
+			clusteredColumns.add("cl_isLeaf");
+
+			SampleWriter sampleWriter = null;
+			try {
+				sampleWriter = csvManager.getSampleWriter(
+						clusteredColumns.toArray(new String[clusteredColumns.size()]), clustered, true);
+				hClusterer.clusterSamples(//
+						normInfos.getColumns(), //
+						filter, //
+						csvManager.getSampleIterable(norm),//
+						sampleWriter);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				rv.addErr(e.getMessage());
+			} catch (IOException e) {
+				e.printStackTrace();
+				rv.addErr(e.getMessage());
+			} finally {
+				IOUtils.closeQuietly(sampleWriter);
+			}
+		}
+
+		inspectCsv(clustered, 0, rv);
+
+	}
+
 	// ----------------- inspect-csv ---------------
 
 	@Command(abbrev = "inspect", description = "inspects a CSV file, giving some general informations")
@@ -298,7 +367,10 @@ public class Shell {
 	}
 
 	@Command(abbrev = "load")
-	public ShellView loadCsv(String name, String variables, double sampleRate) {
+	public ShellView loadCsv(//
+			@Param(name = "fileName", description = "file name with full path") String name,//
+			@Param(name = "variables") String variables, //
+			@Param(name = "sampleRate") double sampleRate) {
 		ShellView rv = new ShellView();
 
 		Set<String> columns = null;

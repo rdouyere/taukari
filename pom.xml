@@ -49,6 +49,14 @@
 			<version>14.0.1</version>
 		</dependency>
 
+
+		<!-- https://github.com/sape/hac -->
+		<dependency>
+			<groupId>sape</groupId>
+			<artifactId>hac</artifactId>
+			<version>1.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -92,7 +100,15 @@
 	<repositories>
 		<repository>
 			<id>sonatype-nexus-snapshots</id>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+		<!-- Local repository -->
+		<repository>
+			<id>repo</id>
+			<url>file://${project.basedir}/repo</url>
 		</repository>
 	</repositories>
 

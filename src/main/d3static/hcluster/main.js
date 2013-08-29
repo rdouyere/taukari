@@ -5,8 +5,8 @@ var margin = {
 	bottom : 40,
 	left : 40
 };
-var width = 500 - margin.left - margin.right;
-var height = 500 - margin.top - margin.bottom;
+var width = 700 - margin.left - margin.right;
+var height = 700 - margin.top - margin.bottom;
 
 // D3 init (scales, axis, graph)
 var x = d3.scale.linear().range([ 0, width ]);
@@ -37,29 +37,36 @@ var source = extractUrlParams()['source'];
 data = [];
 d3.csv(source, function(error, d) {
 	data = d;
+	data.sort(function(a, b) {return b.cl_level - a.cl_level;})
 	addForm();
 	prepareColors();
 	refresh();
 });
 
+
 function prepareColors() {
-//	var names = d3.set(function(d) { return d.name; });
-//	console.log(names.values().length);
-//	if (names.values().length <= 10) {
-		color = d3.scale.category10().domain(d3.set(function(d) { return d.name; }));
-//	} else {
-//		color = d3.scale.category20().domain(d3.set(function(d) { return d.name; }));
-//	}
+	color = d3.scale.category10().domain(d3.set(function(d) { return d.name; }));
 }
 
 // Adding a form with the two select containing the columns
 function addForm() {
 	var form = d3.select("#form")
-		.append("form")
-		.attr("class", "form-inline");
-
-	addSelect(form, data[0], "form_x");
-	addSelect(form, data[0], "form_y");
+		.append("form");
+	
+	var columns = d3.keys(data[0]);
+	// X-Axis
+	addSelect(form, columns, "form_x");
+	// Y-Axis
+	addSelect(form, columns, "form_y");
+	// Level
+	addSelect(form, d3.set(data.map( function(d) { return +d.cl_level; })).values().sort(function(a, b) {return a - b;}), "form_count");
+	// Loop switch
+	form.append('label')
+    	.text("loop")
+    .append("input")
+    	.attr("type", "checkbox")
+    	.attr("id", "form_loop")
+    	.attr("onClick", "loop()");
 }
 
 // Adding a select to the given form given the specified name and options
@@ -69,13 +76,13 @@ function addSelect(form, options, name) {
 		.attr("onchange", "refresh()");
 	
 	select.selectAll("option")
-		.data(d3.keys(options))
+		.data(options)
 		.enter()
 		.append("option")
 		.text(function(d) { return d; });
 
 	select.selectAll("option")
-		.data(d3.keys(options))
+		.data(options)
 		.attr("value", function(d) { return d; });
 }
 
@@ -92,8 +99,20 @@ function extractUrlParams() {
 
 // Extracts the selected option from an HTML select
 function extractSelected(selectName) {
+	var _form = document.getElementById(selectName);
+	return _form.options[_form.selectedIndex].value;
+}
+
+// Sets the selected option from an HTML select
+function setSelected(selectName, value) {
+	var _form = document.getElementById(selectName);
+	_form.selectedIndex = value;
+}
+
+//Extracts the state from an HTML checkbox
+function extractCheck(selectName) {
 	var x_form = document.getElementById(selectName);
-	return x_form.options[x_form.selectedIndex].value;
+	return x_form.checked;
 }
 
 // Uses the x and y select to map data on the requested columns
@@ -103,6 +122,11 @@ function mapData() {
 	data.forEach(function(d) {
 		d.x = +d[x_form_value];
 		d.y = +d[y_form_value];
+		d.timezone = +d.timezone;
+		d.cl_nbLeaves = +d.cl_nbLeaves;
+		d.cl_radius = +d.cl_radius;
+		d.cl_level = +d.cl_level;
+		d.cl_isLeaf = +d.cl_isLeaf;
 	});
 }
 
@@ -116,20 +140,61 @@ function refresh() {
 	
 	s = svg.selectAll(".dot").data(data, function(d) { return data.indexOf(d); });
 
+	var count = parseFloat(extractSelected("form_count"),10);
+	
+	// Setting the size of dots depending on the level
+	s.filter(function(d) { return !shouldShow(d, count) })
+		.attr("r", 0);
+	s.filter(function(d) { return shouldShow(d, count) })
+		.attr("r",function(d) { return Math.sqrt(d.cl_nbLeaves / 3.1415) * 2 });
+	
 	s.enter().append("circle")
-		.attr("r", 0.5)
 		.attr('class', 'dot')
 		.attr("cx", function(d) { return x(d.x + ((Math.random() - 0.5) * 4)); })
 		.attr("cy", function(d) { return y(d.y + ((Math.random() - 0.5) * 2)); })
-		.style("fill", function(d) { return color(d.name); });
-
-//		.filter(function(d) { return d.x < 0 })
-//		.style("fill", function(d) { return color(d.name + 3); });
+		.style("fill", function(d) { return color(Math.round(d.timezone)); });
 
 	s.transition().duration(800)
-		.attr("r", 3.5)
 		.attr("cx", function(d) { return x(d.x); })
 		.attr("cy", function(d) { return y(d.y); });
 
 	s.exit().remove();
+}
+
+// Will we show this point? Yes if it is a node with level equals to selected or a leaf with level less of equals to selected
+function shouldShow (d, count) {
+	var ret = false;
+	if ((d.cl_level == count && d.cl_isLeaf == 0.0) || (d.cl_level <= count && d.cl_isLeaf == 1.0)) {
+		ret = true;
+	}  
+	return ret;
+}
+
+// Let's loop and call moveAndRefresh()
+function loop() {
+	(function myLoop (i) {          
+		   setTimeout(function () {   
+			  var l = moveAndRefresh();         
+			  if (l) {
+				  if (--i) myLoop(i);     
+			  }
+		   }, 100)
+		})(50);     
+}
+
+// Change the level and refresh the view.
+function moveAndRefresh() {
+	var loopSwitch = extractCheck("form_loop");
+	
+	if (loopSwitch) {
+		var count = parseFloat(extractSelected("form_count"),10);
+		count--;
+		if (count < 0) {
+			count = 20; // Gasp, should not be hardcoded
+		}
+		setSelected("form_count", count);
+		refresh();
+	}
+	
+	return loopSwitch;
 }

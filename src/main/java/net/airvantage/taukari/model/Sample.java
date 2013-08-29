@@ -9,6 +9,11 @@ import java.util.Arrays;
  * sample, the variables are in the same order. This allows to process variable
  * vectors.
  * </p>
+ * <p>
+ * Current definition of sample is very restrictive as only doubles are allowed
+ * with a name. We should be more open. Maybe stay on doubles for variables but
+ * with as many side content as we want...
+ * </p>
  */
 public class Sample {
 

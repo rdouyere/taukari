@@ -34,7 +34,7 @@ public class Clusterer {
 	 *            the variables to use in the clustering
 	 * @param samples
 	 *            the {@link Iterable} on samples
-	 * @param sampleWriter
+	 * @param writer
 	 *            the writer for samples with the clusters added. Can be null,
 	 *            samples with cluster names will not be written to disk in the
 	 *            case.
@@ -43,7 +43,7 @@ public class Clusterer {
 	 *            be written to disk in the case.
 	 */
 	public void clusterSamples(int nbClusters, String[] variables, String[] variablesToUse, SampleIterable samples,
-			SampleWriter sampleWriter, SampleWriter centroidWriter) {
+			SampleWriter writer, SampleWriter centroidWriter) {
 
 		int[] variableIndices = getVariableIndices(variables, variablesToUse);
 
@@ -59,9 +59,9 @@ public class Clusterer {
 			int i = 0;
 			for (CentroidCluster<Point> cl : cluster) {
 				String clusterName = "cluster" + i;
-				if (sampleWriter != null) {
+				if (writer != null) {
 					for (Point point : cl.getPoints()) {
-						sampleWriter.writeSample(new Sample(point.s.getContent(), clusterName));
+						writer.writeSample(new Sample(point.s.getContent(), clusterName));
 					}
 				}
 				double[] centroidData = cl.getCenter().getPoint();
@@ -73,7 +73,7 @@ public class Clusterer {
 				i++;
 			}
 		} finally {
-			IOUtils.closeQuietly(sampleWriter);
+			IOUtils.closeQuietly(writer);
 			IOUtils.closeQuietly(centroidWriter);
 		}
 	}

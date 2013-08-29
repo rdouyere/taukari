@@ -4,16 +4,18 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * General informations about a csv file.
+ * Data structure for general informations about a csv file.
  */
 public class CsvInfo {
 
+	/** The number of columns (found in the header) */
 	private final String[] columns;
+	/** The number of line (header excluded) */
 	private final int nbLines;
+	/** Some of the lines, randomly sampled */
 	private final List<String[]> samples;
 
 	public CsvInfo(String[] columns, int nbLines, List<String[]> samples) {
-		super();
 		this.columns = columns;
 		this.nbLines = nbLines;
 		this.samples = samples;

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import net.airvantage.taukari.model.Sample;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -40,7 +39,7 @@ public class SampleIterator implements Iterator<Sample>, Closeable {
 
 	@Override
 	public void remove() {
-		throw new NotImplementedException();
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
