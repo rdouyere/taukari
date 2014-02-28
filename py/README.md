@@ -5,21 +5,20 @@ Environment installation
 The goal is to install all the required libs into a virtualenv (in order to sandbox and not mess with the system versions of Python).
 
 Prerequisite:
-Python 2.7.6 + virtualenv
+
+* Python 2.7.6
+* [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/)
+* libhdf5-dev
+* libblas3-dev
+* libatlas-base-dev
+* gfortran
+* libpng12-dev
 
 Here are the installation instructions:
-
-    $ virtualenv-2.7 a
-    $ cd a
-    $ bin/pip install pandas
-    $ bin/pip install ruffus
-    $ bin/pip install numexpr
-    $ bin/pip install cython
-    $ bin/pip install tables
-    $ bin/pip install scipy   
-    $ bin/pip install matplotlib
-    $ bin/pip install scikit-learn
-    $ bin/pip install ipython
+```sh
+$ mkvirtualenv taukari -p /usr/bin/python2.7 -a /w/taukari/py -r requirements
+$ workon taukari
+```
 
 MacOS issue
 -----------
