@@ -31,6 +31,7 @@ http://blog.zuloo.de/archives/Building-scipy-on-OSX-Mavericks-11.html
 https://gist.github.com/goldsmith/7262122
 
 Probably something like:
+
     $ export FCFLAGS="-arch x86_64"
     $ export CFLAGS="-arch x86_64"
     $ export FFLAGS=""
