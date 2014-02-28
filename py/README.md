@@ -11,15 +11,16 @@ Here are the installation instructions:
 
     $ virtualenv-2.7 a
     $ cd a
-    $ bin/pip install pandas
-    $ bin/pip install ruffus
-    $ bin/pip install numexpr
-    $ bin/pip install cython
-    $ bin/pip install tables
-    $ bin/pip install scipy   
-    $ bin/pip install matplotlib
-    $ bin/pip install scikit-learn
-    $ bin/pip install ipython
+	$ source bin/activate
+    $ pip install pandas
+    $ pip install ruffus
+    $ pip install numexpr
+    $ pip install cython
+    $ pip install tables
+    $ pip install scipy   
+    $ pip install matplotlib
+    $ pip install scikit-learn
+    $ pip install ipython
 
 MacOS issue
 -----------
@@ -27,8 +28,8 @@ MacOS issue
 For MacOSX scipy installation is not that easy. As of today I did not succeed on 10.9 (was ok on 10.8).
 
 To be continued with the following resources:
-http://blog.zuloo.de/archives/Building-scipy-on-OSX-Mavericks-11.html
-https://gist.github.com/goldsmith/7262122
+* http://blog.zuloo.de/archives/Building-scipy-on-OSX-Mavericks-11.html
+* https://gist.github.com/goldsmith/7262122
 
 Probably something like:
 
@@ -47,7 +48,7 @@ Testing the installation
 Let's make sure that everything is ok:
 
     $ mkdir data
-    $ bin/python ../src/check_install.py
+    $ python ../src/check_install.py
 
 At this point you should see something like :
 
@@ -68,7 +69,7 @@ At this point you should see something like :
 Playing with data
 =================
 
-    $ bin/ipython
+    $ ipython
     In [1]: %run ../src/load.py
     In [2]: data = getData("../data/test.csv", "col1,col2")
 

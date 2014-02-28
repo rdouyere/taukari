@@ -2,11 +2,12 @@
 
 virtualenv-2.7 a
 cd a
-bin/pip install pandas
-bin/pip install ruffus
-bin/pip install numexpr
-bin/pip install cython
-bin/pip install tables
+source bin/activate
+pip install pandas
+pip install ruffus
+pip install numexpr
+pip install cython
+pip install tables
 
 export FCFLAGS="-arch x86_64"
 export CFLAGS="-arch x86_64"
@@ -15,8 +16,8 @@ export LDFLAGS="-Wall -undefined dynamic_lookup -arch x86_64"
 export CC=gcc
 export CXX="g++ -arch x86_64"
 
-bin/pip install scipy   
-bin/pip install matplotlib
-bin/pip install scikit-learn
-bin/pip install ipython
+pip install scipy   
+pip install matplotlib
+pip install scikit-learn
+pip install ipython
 
