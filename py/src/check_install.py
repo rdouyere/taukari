@@ -1,3 +1,4 @@
+#!/usr/bin/python
 
 # This script will use the only try to do some basic manipulations to ensure install is ok
 import glob
@@ -12,7 +13,7 @@ def etl(inputFile, outputFile):
 @files("data/test.hdf", None)
 @follows(etl)
 def stats(inputFile, outputFile):
-	comms = p.read_hdf(inputFile,"table")
-	print comms.describe()
+	data = p.read_hdf(inputFile,"table")
+	print data.describe()
 
 pipeline_run([stats])
