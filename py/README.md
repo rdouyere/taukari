@@ -8,6 +8,7 @@ Prerequisite:
 Python 2.7.6 + virtualenv
 
 Here are the installation instructions:
+
     $ virtualenv-2.7 a
     $ cd a
     $ bin/pip install pandas
