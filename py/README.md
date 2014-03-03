@@ -4,10 +4,26 @@ Environment installation
 
 The goal is to install all the required libs into a virtualenv (in order to sandbox and not mess with the system versions of Python).
 
-Prerequisite:
-Python 2.7.6 + virtualenv
+Prerequisite
+------------
+
+* Python 2.7.6
+* [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/)
+* libhdf5-dev
+* libblas3-dev
+* libatlas-base-dev
+* gfortran
+* libpng12-dev
+
+### Virtualenvwrapper
 
 Here are the installation instructions:
+```sh
+$ mkvirtualenv taukari -p /usr/bin/python2.7 -a /w/taukari/py -r requirements
+$ workon taukari
+```
+
+### Virtualenv
 
     $ virtualenv-2.7 a
     $ cd a
